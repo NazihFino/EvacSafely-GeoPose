@@ -14,14 +14,30 @@
         #attributesForm {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
             background: white;
             padding: 10px;
             z-index: 10;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            max-width: 300px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            max-height: 90%;
+        }
+        #attributesForm label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        #attributesForm input {
+            width: calc(100% - 10px);
+            margin-bottom: 10px;
+            padding: 5px;
         }
         #submitBtn {
-            margin-top: 10px;
+            display: block;
+            width: 100%;
+            padding: 10px;
         }
     </style>
 
@@ -34,13 +50,10 @@
             "esri/views/MapView",
             "esri/Graphic",
             "esri/geometry/Point",
-            "esri/layers/FeatureLayer",
             "esri/widgets/Search",
             "esri/widgets/Locate",
-            "esri/symbols/SimpleMarkerSymbol",
-            "esri/widgets/Expand",
-            "esri/widgets/CoordinateConversion"
-        ], function (Map, MapView, Graphic, Point, FeatureLayer, Search, Locate, SimpleMarkerSymbol, Expand, CoordinateConversion) {
+            "esri/symbols/SimpleMarkerSymbol"
+        ], function (Map, MapView, Graphic, Point, Search, Locate, SimpleMarkerSymbol) {
 
             var map = new Map({
                 basemap: "streets"
@@ -152,20 +165,24 @@
                 .catch(error => console.error('Error adding feature:', error));
             }
 
-            // Add search and locate widgets to the view
+            // Add search widget to the view
             var searchWidget = new Search({
                 view: view
             });
-
             view.ui.add(searchWidget, {
                 position: "top-left",
                 index: 0
             });
 
+            // Add locate widget to the view
             var locateBtn = new Locate({
-                view: view
+                view: view,
+                useHeadingEnabled: false,
+                goToOverride: function(view, options) {
+                    options.target.scale = 1500;
+                    return view.goTo(options.target);
+                }
             });
-
             view.ui.add(locateBtn, {
                 position: "top-left",
                 index: 1

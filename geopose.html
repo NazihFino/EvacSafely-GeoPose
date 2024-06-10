@@ -86,11 +86,23 @@
 
             var pointGraphic;
 
+            function createPopupContent(lat, lon) {
+                return "<a href='arcgis-trek2there://?stop=" + lat + "," + lon + "'>" + "Click <u>here</u> to open Find Your Way</a>";
+            }
+
             view.on("click", function (event) {
                 view.graphics.removeAll();
+                var lat = event.mapPoint.latitude.toFixed(8);
+                var lon = event.mapPoint.longitude.toFixed(8);
+
+                document.getElementById("latitude").value = lat;
+                document.getElementById("longitude").value = lon;
+                document.getElementById("altitude").value = 0; // Default value
+                document.getElementById("heading").value = 0; // Default value
+
                 var point = new Point({
-                    longitude: event.mapPoint.longitude,
-                    latitude: event.mapPoint.latitude
+                    longitude: lon,
+                    latitude: lat
                 });
 
                 pointGraphic = new Graphic({
@@ -100,9 +112,11 @@
 
                 view.graphics.add(pointGraphic);
 
-                document.getElementById("latitude").value = point.latitude;
-                document.getElementById("longitude").value = point.longitude;
-                document.getElementById("altitude").value = 0;
+                view.popup.open({
+                    title: "Find Your Way",
+                    content: createPopupContent(lat, lon),
+                    location: event.mapPoint
+                });
             });
 
             document.getElementById("submitBtn").addEventListener("click", function () {
@@ -125,6 +139,24 @@
                 };
 
                 addGeoPoseFeature(geoPoseData);
+
+                var point = new Point({
+                    longitude: geoPoseData.longitude,
+                    latitude: geoPoseData.latitude
+                });
+
+                pointGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
+
+                view.graphics.add(pointGraphic);
+
+                view.popup.open({
+                    title: "Find Your Way",
+                    content: createPopupContent(geoPoseData.latitude, geoPoseData.longitude),
+                    location: point
+                });
             });
 
             function addGeoPoseFeature(geoPoseData) {
@@ -244,7 +276,7 @@
     <button id="toggleFormBtn">Show Form</button>
 
     <div id="attributesForm">
-        <h3>GeoPose POI</h3>
+        <h3>GeoPose Attributes</h3>
         <label>Latitude: <input type="text" id="latitude" readonly></label><br>
         <label>Longitude: <input type="text" id="longitude" readonly></label><br>
         <label>Altitude: <input type="number" id="altitude"></label><br>
